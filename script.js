@@ -313,11 +313,11 @@ class App {
   }
 
   _getLocalStorage() {
-    const editedData = JSON.parse(localStorage.getItem('workouts'));
+    const data = JSON.parse(localStorage.getItem('workouts'));
 
-    if (!editedData) return;
+    if (!data) return;
 
-    this.#workouts = editedData;
+    this.#workouts = data;
     this.#workouts.forEach(work => {
       this._renderWorkout(work);
     });
@@ -371,7 +371,7 @@ class App {
         const editEl = e.target.closest('.workout');
         if (!editEl) return;
 
-        const editData = editedData.find(work => work.id === editEl.dataset.id);
+        let editData = editedData.find(work => work.id === editEl.dataset.id);
 
         // Replacing list with form
         const editForm = document.createElement('form');
@@ -379,7 +379,7 @@ class App {
         editForm.innerHTML = `
         <div class="form__row">
             <label class="form__label">Type</label>
-            <select class="form__input form__input--type">
+            <select class="form__input editForm__input--type">
               <option value="running" ${
                 editData.type === 'running' ? 'selected' : ''
               }>Running</option>
@@ -392,32 +392,29 @@ class App {
             <label class="form__label">Distance</label>
             <input value="${
               editData.distance
-            }" class="form__input form__input--distance" placeholder="km" />
+            }" class="form__input editForm__input--distance" placeholder="km" />
           </div>
           <div class="form__row">
             <label class="form__label">Duration</label>
             <input
               value="${editData.duration}"
-              class="form__input form__input--duration"
+              class="form__input editForm__input--duration"
               placeholder="min"
             />
           </div>
           <div class="form__row">
             <label class="form__label">Cadence</label>
             <input
-              value="${
-                editData.type === 'running'
-                  ? editData.cadence
-                  : editData.elevationGain
-              }"
-              class="form__input form__input--cadence"
+              value="${editData.cadence}"
+              class="form__input editForm__input--cadence"
               placeholder="step/min"
             />
           </div>
           <div class="form__row form__row--hidden">
             <label class="form__label">Elev Gain</label>
             <input
-              class="form__input form__input--elevation"
+              value="${editData.elevationGain}"
+              class="form__input editForm__input--elevation"
               placeholder="meters"
             />
           </div>
@@ -427,15 +424,20 @@ class App {
         editEl.parentNode.replaceChild(editForm, editEl);
 
         console.log(editData);
+        console.log(editedData);
 
-        const form = document.querySelector('.form');
-        const containerWorkouts = document.querySelector('.workouts');
-        const inputType = document.querySelector('.form__input--type');
-        const inputDistance = document.querySelector('.form__input--distance');
-        const inputDuration = document.querySelector('.form__input--duration');
-        const inputCadence = document.querySelector('.form__input--cadence');
+        const inputType = document.querySelector('.editForm__input--type');
+        const inputDistance = document.querySelector(
+          '.editForm__input--distance'
+        );
+        const inputDuration = document.querySelector(
+          '.editForm__input--duration'
+        );
+        const inputCadence = document.querySelector(
+          '.editForm__input--cadence'
+        );
         const inputElevation = document.querySelector(
-          '.form__input--elevation'
+          '.editForm__input--elevation'
         );
 
         editForm.addEventListener('submit', e => {
@@ -451,8 +453,9 @@ class App {
           editData.type = inputType.value;
           editData.distance = +inputDistance.value;
           editData.duration = +inputDuration.value;
+          const { lat, lng } = editData.coords;
+          let workout;
 
-          console.log(editData.type, editData.distance, editData.duration);
           if (editData.type === 'running') {
             editData.cadence = +inputCadence.value;
 
@@ -499,6 +502,20 @@ class App {
               editData.elevationGain
             );
           }
+
+          // Updating #workouts object with edited data
+          console.log(editData);
+
+          editedData[
+            editedData.indexOf(
+              editedData.find(work => work.id === editEl.dataset.id)
+            )
+          ] = editData;
+
+          console.log(editedData);
+
+          // Updating localStorage Data
+          localStorage.setItem('workouts', JSON.stringify(editedData));
         });
       });
     });
@@ -506,3 +523,5 @@ class App {
 }
 
 const app = new App();
+
+// closet class clicked on delete btn and edit btn
