@@ -83,7 +83,6 @@ class App {
 
     this._edit();
     this._delete();
-    this._testLogo();
   }
 
   _getPosition() {
@@ -358,16 +357,6 @@ class App {
       });
     });
   }
-  _testLogo() {
-    const logo = document.querySelector('.logo');
-
-    // **
-    logo.addEventListener('click', () => this._testLog(5, 3));
-  }
-
-  _testLog(a, b) {
-    console.log(a - b);
-  }
 
   _edit() {
     const editor = document.querySelectorAll('.edit');
@@ -439,8 +428,17 @@ class App {
 
         console.log(editData);
 
-        // editForm.addEventListener('submit', app._newWorkout(e));
-        editForm.addEventListener('submit', function (e) {
+        const form = document.querySelector('.form');
+        const containerWorkouts = document.querySelector('.workouts');
+        const inputType = document.querySelector('.form__input--type');
+        const inputDistance = document.querySelector('.form__input--distance');
+        const inputDuration = document.querySelector('.form__input--duration');
+        const inputCadence = document.querySelector('.form__input--cadence');
+        const inputElevation = document.querySelector(
+          '.form__input--elevation'
+        );
+
+        editForm.addEventListener('submit', e => {
           const validInputs = function (...inputs) {
             return inputs.every(inp => Number.isFinite(inp));
           };
