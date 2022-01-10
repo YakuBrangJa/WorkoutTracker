@@ -62,6 +62,7 @@ const inputDistance = document.querySelector('.form__input--distance');
 const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
+const formCloseBtn = document.querySelector('.form__close-btn');
 
 class App {
   #map;
@@ -81,8 +82,11 @@ class App {
 
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
 
-    this._edit();
-    this._delete();
+    containerWorkouts.addEventListener('click', this._delete.bind(this));
+
+    containerWorkouts.addEventListener('click', this._edit.bind(this));
+
+    formCloseBtn.addEventListener('click', this._closeForm);
   }
 
   _getPosition() {
@@ -142,6 +146,16 @@ class App {
     form.style.display = 'none';
     form.classList.add('hidden');
     setTimeout(() => (form.style.display = 'grid'), 600);
+  }
+
+  _closeForm() {
+    inputDistance.value =
+      inputCadence.value =
+      inputDuration.value =
+      inputElevation.value =
+        '';
+
+    form.classList.add('hidden');
   }
 
   _toggleElevationField() {
@@ -208,8 +222,6 @@ class App {
 
     // Storing data in Local Storage
     this._setLocalStorage(this.#workouts);
-    this._edit();
-    this._delete();
   }
 
   _renderWorkoutMarker(e) {
@@ -289,6 +301,8 @@ class App {
     form.insertAdjacentHTML('afterend', html);
   }
   _moveToPopup(e) {
+    if (e.target.closest('.delete') || e.target.closest('.edit')) return;
+
     const workoutEl = e.target.closest('.workout');
     if (!workoutEl) return;
 
@@ -328,55 +342,41 @@ class App {
     location.reload();
   }
 
-  _delete() {
-    const del = document.querySelectorAll('.delete');
+  _delete(e) {
+    const delBtn = e.target.closest('.delete');
+    if (!delBtn) return;
 
-    let editedData = this.#workouts;
-    del.forEach(btn => {
-      // remove from display
-      btn.addEventListener('click', e => {
-        e.stopPropagation();
-        this._testLog(5, 1);
-        const delEl = e.target.closest('.workout');
-        if (!delEl) return;
+    const delEl = delBtn.parentNode.parentNode.parentNode;
 
-        // unrendering the list
-        delEl.classList.add('hide');
+    // unrendering the list
+    delEl.classList.add('hide');
 
-        // removing data from LocalStorage
-        const delData = editedData.find(work => work.id === delEl.dataset.id);
+    // removing data from LocalStorage
+    const delData = this.#workouts.find(work => work.id === delEl.dataset.id);
 
-        editedData.splice(editedData.indexOf(delData), 1);
+    this.#workouts.splice(this.#workouts.indexOf(delData), 1);
 
-        localStorage.setItem('workouts', JSON.stringify(editedData));
+    this._setLocalStorage(this.#workouts);
 
-        // removing the list
-        setTimeout(() => delEl.parentNode.removeChild(delEl), 600);
-
-        // this._setLocalStorage(editedData).bind(this);
-      });
-    });
+    // removing the list from document
+    setTimeout(() => delEl.parentNode.removeChild(delEl), 600);
   }
 
-  _edit() {
-    const editor = document.querySelectorAll('.edit');
-    let editedData = this.#workouts;
+  _edit(e) {
+    const editBtn = e.target.closest('.edit');
+    if (!editBtn) return;
 
-    editor.forEach(edit => {
-      edit.addEventListener('click', e => {
-        e.stopPropagation();
+    const editEl = editBtn.parentNode.parentNode.parentNode;
 
-        // console.log(app.#workouts);
+    let editData = this.#workouts.find(work => work.id === editEl.dataset.id);
 
-        const editEl = e.target.closest('.workout');
-        if (!editEl) return;
-
-        let editData = editedData.find(work => work.id === editEl.dataset.id);
-
-        // Replacing list with form
-        const editForm = document.createElement('form');
-        editForm.classList.add('form');
-        editForm.innerHTML = `
+    // Replacing clicked item with editor form
+    const editForm = document.createElement('form');
+    editForm.classList.add('editForm');
+    editForm.innerHTML = `
+          <button type="button" class="editForm__close-btn">
+            <img src="icons/clear.png" />
+          </button>
         <div class="form__row">
             <label class="form__label">Type</label>
             <select class="form__input editForm__input--type">
@@ -418,110 +418,167 @@ class App {
               placeholder="meters"
             />
           </div>
-          <button class="form__btn">OK</button>
+          <button type="submit" class="form__btn">OK</button>
+
         `;
 
-        editEl.parentNode.replaceChild(editForm, editEl);
+    editEl.parentNode.replaceChild(editForm, editEl);
 
-        console.log(editData);
-        console.log(editedData);
+    const form = document.querySelector('.editForm');
+    const inputType = document.querySelector('.editForm__input--type');
+    const inputDistance = document.querySelector('.editForm__input--distance');
+    const inputDuration = document.querySelector('.editForm__input--duration');
+    const inputCadence = document.querySelector('.editForm__input--cadence');
+    const inputElevation = document.querySelector(
+      '.editForm__input--elevation'
+    );
 
-        const inputType = document.querySelector('.editForm__input--type');
-        const inputDistance = document.querySelector(
-          '.editForm__input--distance'
-        );
-        const inputDuration = document.querySelector(
-          '.editForm__input--duration'
-        );
-        const inputCadence = document.querySelector(
-          '.editForm__input--cadence'
-        );
-        const inputElevation = document.querySelector(
-          '.editForm__input--elevation'
-        );
-
-        editForm.addEventListener('submit', e => {
-          const validInputs = function (...inputs) {
-            return inputs.every(inp => Number.isFinite(inp));
-          };
-          const allPositive = function (...inputs) {
-            return inputs.every(inp => inp > 0);
-          };
-
-          e.preventDefault();
-
-          editData.type = inputType.value;
-          editData.distance = +inputDistance.value;
-          editData.duration = +inputDuration.value;
-          const { lat, lng } = editData.coords;
-          let workout;
-
-          if (editData.type === 'running') {
-            editData.cadence = +inputCadence.value;
-
-            if (
-              !validInputs(
-                editData.distance,
-                editData.duration,
-                editData.cadence
-              ) ||
-              !allPositive(
-                editData.distance,
-                editData.duration,
-                editData.cadence
-              )
-            ) {
-              return alert('Inputs have to be positive number');
-            }
-
-            workout = new Running(
-              [lat, lng],
-              editData.distance,
-              editData.cadence
-            );
-          }
-
-          if (editData.type === 'cycling') {
-            editData.elevationGain = +inputElevation.value;
-
-            if (
-              !validInputs(
-                editData.distance,
-                editData.duration,
-                editData.elevationGain
-              ) ||
-              !allPositive(editData.distance, editData.duration)
-            ) {
-              return alert('Inputs have to be positive number');
-            }
-
-            workout = new Cycling(
-              [lat, lng],
-              editData.distance,
-              editData.duration,
-              editData.elevationGain
-            );
-          }
-
-          // Updating #workouts object with edited data
-          console.log(editData);
-
-          editedData[
-            editedData.indexOf(
-              editedData.find(work => work.id === editEl.dataset.id)
-            )
-          ] = editData;
-
-          console.log(editedData);
-
-          // Updating localStorage Data
-          localStorage.setItem('workouts', JSON.stringify(editedData));
-        });
+    // closing editor form
+    document
+      .querySelector('.editForm__close-btn')
+      .addEventListener('click', function () {
+        editForm.parentNode.replaceChild(editEl, editForm);
       });
+
+    if (editData.type === 'cycling') {
+      inputCadence.closest('.form__row').classList.add('form__row--hidden');
+      inputElevation
+        .closest('.form__row')
+        .classList.remove('form__row--hidden');
+    }
+
+    editForm.addEventListener('submit', e => {
+      const validInputs = function (...inputs) {
+        return inputs.every(inp => Number.isFinite(inp));
+      };
+      const allPositive = function (...inputs) {
+        return inputs.every(inp => inp > 0);
+      };
+
+      e.preventDefault();
+
+      editData.type = inputType.value;
+      editData.distance = +inputDistance.value;
+      editData.duration = +inputDuration.value;
+      const { lat, lng } = editData.coords;
+      let workout;
+
+      if (editData.type === 'running') {
+        editData.cadence = +inputCadence.value;
+
+        if (
+          !validInputs(
+            editData.distance,
+            editData.duration,
+            editData.cadence
+          ) ||
+          !allPositive(editData.distance, editData.duration, editData.cadence)
+        ) {
+          return alert('Inputs have to be positive number');
+        }
+
+        workout = new Running([lat, lng], editData.distance, editData.cadence);
+      }
+
+      if (editData.type === 'cycling') {
+        editData.elevationGain = +inputElevation.value;
+
+        if (
+          !validInputs(
+            editData.distance,
+            editData.duration,
+            editData.elevationGain
+          ) ||
+          !allPositive(editData.distance, editData.duration)
+        ) {
+          return alert('Inputs have to be positive number');
+        }
+
+        workout = new Cycling(
+          [lat, lng],
+          editData.distance,
+          editData.duration,
+          editData.elevationGain
+        );
+      }
+
+      // Updating #workouts object with edited data
+      console.log(editData);
+
+      this.#workouts[
+        this.#workouts.indexOf(
+          this.#workouts.find(work => work.id === editEl.dataset.id)
+        )
+      ] = editData;
+
+      console.log(this.#workouts);
+
+      // Updating localStorage Data
+      this._setLocalStorage(this.#workouts);
+
+      // replacing editor form with edited workout item
+      // this._renderWorkout(editData)
+
+      const editedWorkout = document.createElement('li');
+      editedWorkout.setAttribute('data-id', `${editData.id}`);
+      editedWorkout.classList.add('workout', `workout--${editData.type}`);
+      editedWorkout.innerHTML = ` 
+     
+          <div class="workout__title">
+          <h2 >${editData.description}</h2>
+          <div class="editor">
+            <button class="edit">
+            <span><img src="icons/edit1.svg"></span>
+            </button>
+            <button class="delete">
+            <span><img src="icons/trash1.svg"></span>
+            </button>
+          </div>
+          </div>
+          <div class="workout__details">
+            <span class="workout__icon">${
+              editData.type === 'running' ? '🏃‍♂️' : '🚴‍♀️'
+            } </span>
+            <span class="workout__value">${editData.distance}</span>
+            <span class="workout__unit">km</span>
+          </div>
+          <div class="workout__details">
+            <span class="workout__icon">⏱</span>
+            <span class="workout__value">${editData.duration}</span>
+            <span class="workout__unit">min</span>
+          </div>
+    `;
+
+      if (editData.type === 'running')
+        editedWorkout.innerHTML += `
+          <div class="workout__details">
+            <span class="workout__icon">⚡️</span>
+            <span class="workout__value">${editData.pace.toFixed(1)}</span>
+            <span class="workout__unit">min/km</span>
+          </div>
+          <div class="workout__details">
+            <span class="workout__icon">🦶🏼</span>
+            <span class="workout__value">${editData.cadence}</span>
+            <span class="workout__unit">spm</span>
+          </div>
+    `;
+
+      if (editData.type === 'cycling')
+        editedWorkout.innerHTML += `
+        <div class="workout__details">
+        <span class="workout__icon">⚡️</span>
+        <span class="workout__value">${editData.speed.toFixed(1)}</span>
+        <span class="workout__unit">km/h</span>
+      </div>
+      <div class="workout__details">
+        <span class="workout__icon">⛰</span>
+        <span class="workout__value">${editData.elevationGain}</span>
+        <span class="workout__unit">m</span>
+      </div>
+   `;
+      editForm.parentNode.replaceChild(editedWorkout, editForm);
     });
   }
 }
 
 const app = new App();
-
-// closet class clicked on delete btn and edit btn
