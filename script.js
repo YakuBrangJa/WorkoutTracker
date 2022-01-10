@@ -171,10 +171,6 @@ class App {
       return inputs.every(inp => inp > 0);
     };
 
-    // const validInputs = (...inputs) =>
-    //   inputs.every(inp => Number.isFinite(inp));
-    // const allPositive = (...inputs) => inputs.every(inp => inp > 0);
-
     e.preventDefault();
 
     const type = inputType.value;
@@ -324,6 +320,57 @@ class App {
     }
   }
 
+  _formHtml(editData) {
+    return `
+    <button type="button" class="editForm__close-btn">
+      <img src="icons/clear.png" />
+    </button>
+  <div class="form__row">
+      <label class="form__label">Type</label>
+      <select class="form__input editForm__input--type">
+        <option value="running" ${
+          editData.type === 'running' ? 'selected' : ''
+        }>Running</option>
+        <option value="cycling" ${
+          editData.type === 'cycling' ? 'selected' : ''
+        }>Cycling</option>
+      </select>
+    </div>
+    <div class="form__row">
+      <label class="form__label">Distance</label>
+      <input value="${
+        editData.distance
+      }" class="form__input editForm__input--distance" placeholder="km" />
+    </div>
+    <div class="form__row">
+      <label class="form__label">Duration</label>
+      <input
+        value="${editData.duration}"
+        class="form__input editForm__input--duration"
+        placeholder="min"
+      />
+    </div>
+    <div class="form__row">
+      <label class="form__label">Cadence</label>
+      <input
+        value="${editData.cadence}"
+        class="form__input editForm__input--cadence"
+        placeholder="step/min"
+      />
+    </div>
+    <div class="form__row form__row--hidden">
+      <label class="form__label">Elev Gain</label>
+      <input
+        value="${editData.elevationGain}"
+        class="form__input editForm__input--elevation"
+        placeholder="meters"
+      />
+    </div>
+    <button type="submit" class="form__btn">OK</button>
+
+  `;
+  }
+
   _moveToPopup(e) {
     if (e.target.closest('.delete') || e.target.closest('.edit')) return;
 
@@ -403,70 +450,19 @@ class App {
         work => work.id === otherForm.dataset.id
       );
 
-      const otherWorkout = document.createElement('li');
-      otherWorkout.setAttribute('data-id', `${otherData.id}`);
-      otherWorkout.classList.add('workout', `workout--${otherData.type}`);
-      otherWorkout.innerHTML = this._workoutHtml(otherData);
-
-      otherForm.parentNode.replaceChild(otherWorkout, otherForm);
+      this._closeEditorForm(otherData, otherForm, otherForm);
     }
 
-    // Replacing clicked item with editor form
+    // Replacing item with editor form
     const editForm = document.createElement('form');
     editForm.classList.add('editForm');
     editForm.setAttribute('data-id', `${editData.id}`);
 
-    editForm.innerHTML = `
-          <button type="button" class="editForm__close-btn">
-            <img src="icons/clear.png" />
-          </button>
-        <div class="form__row">
-            <label class="form__label">Type</label>
-            <select class="form__input editForm__input--type">
-              <option value="running" ${
-                editData.type === 'running' ? 'selected' : ''
-              }>Running</option>
-              <option value="cycling" ${
-                editData.type === 'cycling' ? 'selected' : ''
-              }>Cycling</option>
-            </select>
-          </div>
-          <div class="form__row">
-            <label class="form__label">Distance</label>
-            <input value="${
-              editData.distance
-            }" class="form__input editForm__input--distance" placeholder="km" />
-          </div>
-          <div class="form__row">
-            <label class="form__label">Duration</label>
-            <input
-              value="${editData.duration}"
-              class="form__input editForm__input--duration"
-              placeholder="min"
-            />
-          </div>
-          <div class="form__row">
-            <label class="form__label">Cadence</label>
-            <input
-              value="${editData.cadence}"
-              class="form__input editForm__input--cadence"
-              placeholder="step/min"
-            />
-          </div>
-          <div class="form__row form__row--hidden">
-            <label class="form__label">Elev Gain</label>
-            <input
-              value="${editData.elevationGain}"
-              class="form__input editForm__input--elevation"
-              placeholder="meters"
-            />
-          </div>
-          <button type="submit" class="form__btn">OK</button>
-
-        `;
+    editForm.innerHTML = this._formHtml(editData);
 
     editEl.parentNode.replaceChild(editForm, editEl);
 
+    // editor form selectors
     const form = document.querySelector('.editForm');
     const inputType = document.querySelector('.editForm__input--type');
     const inputDistance = document.querySelector('.editForm__input--distance');
@@ -476,13 +472,6 @@ class App {
       '.editForm__input--elevation'
     );
 
-    // closing editor form
-    document
-      .querySelector('.editForm__close-btn')
-      .addEventListener('click', function () {
-        editForm.parentNode.replaceChild(editEl, editForm);
-      });
-
     if (editData.type === 'cycling') {
       inputCadence.closest('.form__row').classList.add('form__row--hidden');
       inputElevation
@@ -490,6 +479,14 @@ class App {
         .classList.remove('form__row--hidden');
     }
 
+    // closing editor form with button
+    document
+      .querySelector('.editForm__close-btn')
+      .addEventListener('click', function () {
+        editForm.parentNode.replaceChild(editEl, editForm);
+      });
+
+    // on submitting form
     editForm.addEventListener('submit', e => {
       const validInputs = function (...inputs) {
         return inputs.every(inp => Number.isFinite(inp));
@@ -556,17 +553,29 @@ class App {
 
       console.log(this.#workouts);
 
+      // rendering edited workout
+      // replacing editor form with edited workout item
+      // const editedWorkout = document.createElement('li');
+      // editedWorkout.setAttribute('data-id', `${editData.id}`);
+      // editedWorkout.classList.add('workout', `workout--${editData.type}`);
+      // editedWorkout.innerHTML = this._workoutHtml(editData);
+
+      // editForm.parentNode.replaceChild(editedWorkout, editForm);
+
+      this._closeEditorForm(editData, editForm, editForm);
+
       // Updating localStorage Data
       this._setLocalStorage(this.#workouts);
-
-      // replacing editor form with edited workout item
-      const editedWorkout = document.createElement('li');
-      editedWorkout.setAttribute('data-id', `${editData.id}`);
-      editedWorkout.classList.add('workout', `workout--${editData.type}`);
-      editedWorkout.innerHTML = this._workoutHtml(editData);
-
-      editForm.parentNode.replaceChild(editedWorkout, editForm);
     });
+  }
+
+  _closeEditorForm(a, b, c) {
+    const workoutLi = document.createElement('li');
+    workoutLi.setAttribute('data-id', `${a.id}`);
+    workoutLi.classList.add('workout', `workout--${a.type}`);
+    workoutLi.innerHTML = this._workoutHtml(a);
+
+    b.parentNode.replaceChild(workoutLi, c);
   }
 }
 
