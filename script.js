@@ -243,63 +243,87 @@ class App {
   _renderWorkout(e) {
     let html = ` 
     <li class="workout workout--${e.type}" data-id="${e.id}">
-          <div class="workout__title">
-          <h2 >${e.description}</h2>
-          <div class="editor">
-            <button class="edit">
-            <span><img src="icons/edit1.svg"></span>
-            </button>
-            <button class="delete">
-            <span><img src="icons/trash1.svg"></span>
-            </button>
-          </div>
-          </div>
-          <div class="workout__details">
-            <span class="workout__icon">${
-              e.type === 'running' ? '🏃‍♂️' : '🚴‍♀️'
-            } </span>
-            <span class="workout__value">${e.distance}</span>
-            <span class="workout__unit">km</span>
-          </div>
-          <div class="workout__details">
-            <span class="workout__icon">⏱</span>
-            <span class="workout__value">${e.duration}</span>
-            <span class="workout__unit">min</span>
-          </div>
-    `;
+    ${this._workoutHtml(e)} </li>`;
+    form.insertAdjacentHTML('afterend', html);
+  }
 
-    if (e.type === 'running')
-      html += `
-          <div class="workout__details">
-            <span class="workout__icon">⚡️</span>
-            <span class="workout__value">${e.pace.toFixed(1)}</span>
-            <span class="workout__unit">min/km</span>
-          </div>
-          <div class="workout__details">
-            <span class="workout__icon">🦶🏼</span>
-            <span class="workout__value">${e.cadence}</span>
-            <span class="workout__unit">spm</span>
-          </div>
-        </li>
-    `;
-
-    if (e.type === 'cycling')
-      html += `
-        <div class="workout__details">
+  _workoutHtml(a) {
+    if (a.type === 'running') {
+      return `
+      <div class="workout__title">
+      <h2 >${a.description}</h2>
+      <div class="editor">
+        <button class="edit">
+        <span><img src="icons/edit1.svg"></span>
+        </button>
+        <button class="delete">
+        <span><img src="icons/trash1.svg"></span>
+        </button>
+      </div>
+      </div>
+      <div class="workout__details">
+        <span class="workout__icon">${
+          a.type === 'running' ? '🏃‍♂️' : '🚴‍♀️'
+        } </span>
+        <span class="workout__value">${a.distance}</span>
+        <span class="workout__unit">km</span>
+      </div>
+      <div class="workout__details">
+        <span class="workout__icon">⏱</span>
+        <span class="workout__value">${a.duration}</span>
+        <span class="workout__unit">min</span>
+      </div>
+      <div class="workout__details">
         <span class="workout__icon">⚡️</span>
-        <span class="workout__value">${e.speed.toFixed(1)}</span>
+        <span class="workout__value">${a.pace.toFixed(1)}</span>
+        <span class="workout__unit">min/km</span>
+      </div>
+      <div class="workout__details">
+        <span class="workout__icon">🦶🏼</span>
+        <span class="workout__value">${a.cadence}</span>
+        <span class="workout__unit">spm</span>
+      </div>
+      `;
+    }
+    if (a.type === 'cycling') {
+      return `
+      <div class="workout__title">
+      <h2 >${a.description}</h2>
+      <div class="editor">
+        <button class="edit">
+        <span><img src="icons/edit1.svg"></span>
+        </button>
+        <button class="delete">
+        <span><img src="icons/trash1.svg"></span>
+        </button>
+      </div>
+      </div>
+      <div class="workout__details">
+        <span class="workout__icon">${
+          a.type === 'running' ? '🏃‍♂️' : '🚴‍♀️'
+        } </span>
+        <span class="workout__value">${a.distance}</span>
+        <span class="workout__unit">km</span>
+      </div>
+      <div class="workout__details">
+        <span class="workout__icon">⏱</span>
+        <span class="workout__value">${a.duration}</span>
+        <span class="workout__unit">min</span>
+      </div>
+      <div class="workout__details">
+        <span class="workout__icon">⚡️</span>
+        <span class="workout__value">${a.speed.toFixed(1)}</span>
         <span class="workout__unit">km/h</span>
       </div>
       <div class="workout__details">
         <span class="workout__icon">⛰</span>
-        <span class="workout__value">${e.elevationGain}</span>
+        <span class="workout__value">${a.elevationGain}</span>
         <span class="workout__unit">m</span>
       </div>
-      </li>
-   `;
-
-    form.insertAdjacentHTML('afterend', html);
+      `;
+    }
   }
+
   _moveToPopup(e) {
     if (e.target.closest('.delete') || e.target.closest('.edit')) return;
 
@@ -370,9 +394,28 @@ class App {
 
     let editData = this.#workouts.find(work => work.id === editEl.dataset.id);
 
+    // closing other editor forms
+    if (editEl.parentNode.querySelectorAll('form').length > 1) {
+      const otherForm = editEl.parentNode.querySelector('.editForm');
+      console.log(otherForm.dataset.id);
+
+      const otherData = this.#workouts.find(
+        work => work.id === otherForm.dataset.id
+      );
+
+      const otherWorkout = document.createElement('li');
+      otherWorkout.setAttribute('data-id', `${otherData.id}`);
+      otherWorkout.classList.add('workout', `workout--${otherData.type}`);
+      otherWorkout.innerHTML = this._workoutHtml(otherData);
+
+      otherForm.parentNode.replaceChild(otherWorkout, otherForm);
+    }
+
     // Replacing clicked item with editor form
     const editForm = document.createElement('form');
     editForm.classList.add('editForm');
+    editForm.setAttribute('data-id', `${editData.id}`);
+
     editForm.innerHTML = `
           <button type="button" class="editForm__close-btn">
             <img src="icons/clear.png" />
@@ -502,7 +545,7 @@ class App {
         );
       }
 
-      // Updating #workouts object with edited data
+      // Updating #workouts data array with edited data
       console.log(editData);
 
       this.#workouts[
@@ -517,65 +560,11 @@ class App {
       this._setLocalStorage(this.#workouts);
 
       // replacing editor form with edited workout item
-      // this._renderWorkout(editData)
-
       const editedWorkout = document.createElement('li');
       editedWorkout.setAttribute('data-id', `${editData.id}`);
       editedWorkout.classList.add('workout', `workout--${editData.type}`);
-      editedWorkout.innerHTML = ` 
-     
-          <div class="workout__title">
-          <h2 >${editData.description}</h2>
-          <div class="editor">
-            <button class="edit">
-            <span><img src="icons/edit1.svg"></span>
-            </button>
-            <button class="delete">
-            <span><img src="icons/trash1.svg"></span>
-            </button>
-          </div>
-          </div>
-          <div class="workout__details">
-            <span class="workout__icon">${
-              editData.type === 'running' ? '🏃‍♂️' : '🚴‍♀️'
-            } </span>
-            <span class="workout__value">${editData.distance}</span>
-            <span class="workout__unit">km</span>
-          </div>
-          <div class="workout__details">
-            <span class="workout__icon">⏱</span>
-            <span class="workout__value">${editData.duration}</span>
-            <span class="workout__unit">min</span>
-          </div>
-    `;
+      editedWorkout.innerHTML = this._workoutHtml(editData);
 
-      if (editData.type === 'running')
-        editedWorkout.innerHTML += `
-          <div class="workout__details">
-            <span class="workout__icon">⚡️</span>
-            <span class="workout__value">${editData.pace.toFixed(1)}</span>
-            <span class="workout__unit">min/km</span>
-          </div>
-          <div class="workout__details">
-            <span class="workout__icon">🦶🏼</span>
-            <span class="workout__value">${editData.cadence}</span>
-            <span class="workout__unit">spm</span>
-          </div>
-    `;
-
-      if (editData.type === 'cycling')
-        editedWorkout.innerHTML += `
-        <div class="workout__details">
-        <span class="workout__icon">⚡️</span>
-        <span class="workout__value">${editData.speed.toFixed(1)}</span>
-        <span class="workout__unit">km/h</span>
-      </div>
-      <div class="workout__details">
-        <span class="workout__icon">⛰</span>
-        <span class="workout__value">${editData.elevationGain}</span>
-        <span class="workout__unit">m</span>
-      </div>
-   `;
       editForm.parentNode.replaceChild(editedWorkout, editForm);
     });
   }
