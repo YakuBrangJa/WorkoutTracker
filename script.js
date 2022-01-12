@@ -553,15 +553,6 @@ class App {
 
       console.log(this.#workouts);
 
-      // rendering edited workout
-      // replacing editor form with edited workout item
-      // const editedWorkout = document.createElement('li');
-      // editedWorkout.setAttribute('data-id', `${editData.id}`);
-      // editedWorkout.classList.add('workout', `workout--${editData.type}`);
-      // editedWorkout.innerHTML = this._workoutHtml(editData);
-
-      // editForm.parentNode.replaceChild(editedWorkout, editForm);
-
       this._closeEditorForm(editData, editForm, editForm);
 
       // Updating localStorage Data

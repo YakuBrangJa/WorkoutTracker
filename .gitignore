@@ -1,0 +1,8 @@
+#folders
+
+*/.vscode/*
+*/architecture/*
+
+#files
+.prettierrc
+
