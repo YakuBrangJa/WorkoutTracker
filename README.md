@@ -1,4 +1,4 @@
-<h1>This is my first object oriented JavaScript project. <h1>
+### This is my first object oriented JavaScript project.
 
 What the app does-
 
