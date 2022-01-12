@@ -1,9 +1,0 @@
-{
-  "liveServer.settings.https": {
-    "enable": true,
-    "cert": "C:/Users/dbran/OneDrive/WebDesign Training/JavaScript/JS from zero to expert course/Project Exercise 4 (Mapty App)/https/localhost.pem",
-    "key": "C:/Users/dbran/OneDrive/WebDesign Training/JavaScript/JS from zero to expert course/Project Exercise 4 (Mapty App)/https/localhost.key",
-    "passphrase": "13792"
-  },
-  "liveServer.settings.port": 5501
-}
