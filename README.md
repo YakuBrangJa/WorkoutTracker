@@ -1,4 +1,4 @@
-## This is my first JS project built with Object Oriented approach.
+# This is my first JS project built in Object Oriented approach.
 
 **What the app does:**
 
@@ -11,14 +11,14 @@ Note: This project is a part of [Jonas Schmedtmann](https://twitter.com/jonassch
 
 **Parts of the project which the course covers:**
 
-- Workout activity adding feature
-- Rendering the activity on both panel list and on map.
+- Activity adding feature
+- Rendering the activities on the panel list and map.
 - LocalStorage data storing
-- Fetching LocalStorage data and rendering on load
+- Fetching LocalStorage data and rendering on loading
 - Leaflet library
 
 **My parts in the project:**
 
-- Activity editing
-- Activity deleting
-- LocalStorage data updating on each delete/edit
+- Activity editor
+- Delete feature
+- Update LocalStorage data on each delete/edit
