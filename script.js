@@ -87,6 +87,8 @@ class App {
     containerWorkouts.addEventListener('click', this._edit.bind(this));
 
     formCloseBtn.addEventListener('click', this._closeForm);
+
+    // delCancel.addEventListener('click',)
   }
 
   _getPosition() {
@@ -419,18 +421,51 @@ class App {
 
     const delEl = delBtn.parentNode.parentNode.parentNode;
 
-    // unrendering the list
-    delEl.classList.add('hide');
-
     // removing data from LocalStorage
     const delData = this.#workouts.find(work => work.id === delEl.dataset.id);
 
-    this.#workouts.splice(this.#workouts.indexOf(delData), 1);
+    const sidebar = document.querySelector('.sidebar');
+    sidebar.insertAdjacentHTML(
+      'beforeend',
+      '<div class="del__confirm-box"> <div class="del__msg"><p>Delete activity?</p> </div> <div class="del__btns"> <button class="del__confirm-btn">yes</button> <button class="del__cancel-btn">cancel</button></div> </div> '
+    );
+    sidebar.insertAdjacentHTML('beforeend', '<div class="overlay"></div>');
 
-    this._setLocalStorage(this.#workouts);
+    const dialogoverlay = document.querySelector('.overlay');
+    const dialogbox = document.querySelector('.del__confirm-box');
+    const delConfirm = document.querySelector('.del__confirm-btn');
+    const delCancel = document.querySelector('.del__cancel-btn');
 
-    // removing the list from document
-    setTimeout(() => delEl.parentNode.removeChild(delEl), 600);
+    setTimeout(() => {
+      dialogoverlay.style.opacity = '1';
+    }, 1);
+
+    function removeConfirm() {
+      dialogoverlay.style.opacity = '0';
+      dialogbox.classList.add('close-box');
+
+      // removing fonfirm box
+      setTimeout(() => {
+        dialogbox.parentNode.removeChild(dialogbox);
+        dialogoverlay.parentNode.removeChild(dialogoverlay);
+      }, 200);
+    }
+
+    delCancel.addEventListener('click', removeConfirm);
+
+    delConfirm.addEventListener('click', () => {
+      this.#workouts.splice(this.#workouts.indexOf(delData), 1);
+
+      this._setLocalStorage(this.#workouts);
+
+      // unrendering the list
+      delEl.classList.add('hide');
+
+      // removing the list from document
+      setTimeout(() => delEl.parentNode.removeChild(delEl), 600);
+
+      removeConfirm();
+    });
   }
 
   _edit(e) {
@@ -571,3 +606,5 @@ class App {
 }
 
 const app = new App();
+
+//
