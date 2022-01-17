@@ -86,13 +86,9 @@ class App {
 
     containerWorkouts.addEventListener("click", this._edit.bind(this));
 
-<<<<<<< HEAD
     formCloseBtn.addEventListener("click", this._closeForm);
-=======
-    formCloseBtn.addEventListener('click', this._closeForm);
 
     // delCancel.addEventListener('click',)
->>>>>>> editform-refactor
   }
 
   _getPosition() {
@@ -425,34 +421,28 @@ class App {
 
     const delEl = delBtn.parentNode.parentNode.parentNode;
 
-<<<<<<< HEAD
-    // unrendering the list
-    delEl.classList.add("hide");
-
-=======
->>>>>>> editform-refactor
     // removing data from LocalStorage
     const delData = this.#workouts.find((work) => work.id === delEl.dataset.id);
 
-    const sidebar = document.querySelector('.sidebar');
+    const sidebar = document.querySelector(".sidebar");
     sidebar.insertAdjacentHTML(
-      'beforeend',
+      "beforeend",
       '<div class="del__confirm-box"> <div class="del__msg"><p>Delete activity?</p> </div> <div class="del__btns"> <button class="del__confirm-btn">yes</button> <button class="del__cancel-btn">cancel</button></div> </div> '
     );
-    sidebar.insertAdjacentHTML('beforeend', '<div class="overlay"></div>');
+    sidebar.insertAdjacentHTML("beforeend", '<div class="overlay"></div>');
 
-    const dialogoverlay = document.querySelector('.overlay');
-    const dialogbox = document.querySelector('.del__confirm-box');
-    const delConfirm = document.querySelector('.del__confirm-btn');
-    const delCancel = document.querySelector('.del__cancel-btn');
+    const dialogoverlay = document.querySelector(".overlay");
+    const dialogbox = document.querySelector(".del__confirm-box");
+    const delConfirm = document.querySelector(".del__confirm-btn");
+    const delCancel = document.querySelector(".del__cancel-btn");
 
     setTimeout(() => {
-      dialogoverlay.style.opacity = '1';
+      dialogoverlay.style.opacity = "1";
     }, 1);
 
     function removeConfirm() {
-      dialogoverlay.style.opacity = '0';
-      dialogbox.classList.add('close-box');
+      dialogoverlay.style.opacity = "0";
+      dialogbox.classList.add("close-box");
 
       // removing fonfirm box
       setTimeout(() => {
@@ -461,15 +451,15 @@ class App {
       }, 200);
     }
 
-    delCancel.addEventListener('click', removeConfirm);
+    delCancel.addEventListener("click", removeConfirm);
 
-    delConfirm.addEventListener('click', () => {
+    delConfirm.addEventListener("click", () => {
       this.#workouts.splice(this.#workouts.indexOf(delData), 1);
 
       this._setLocalStorage(this.#workouts);
 
       // unrendering the list
-      delEl.classList.add('hide');
+      delEl.classList.add("hide");
 
       // removing the list from document
       setTimeout(() => delEl.parentNode.removeChild(delEl), 600);
@@ -616,8 +606,3 @@ class App {
 }
 
 const app = new App();
-
-<<<<<<< HEAD
-=======
-//
->>>>>>> editform-refactor
