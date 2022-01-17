@@ -17,7 +17,8 @@
 }
 
 html {
-  font-size: 62.5%;
+  /* font-size: 62.5%; */
+  font-size: 55%;
   box-sizing: border-box;
 }
 
@@ -289,4 +290,100 @@ a:visited {
 }
 .cycling-popup .leaflet-popup-content-wrapper {
   border-left: 5px solid var(--color-brand--1);
+}
+
+.del__confirm-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  z-index: 1002;
+  background: var(--color-dark--1);
+  border-radius: 5px;
+  box-shadow: 0 0 2rem rgba(10, 10, 10, 1);
+  animation: confirmBox__open 0.2s forwards;
+  animation-name: confirmBox__open;
+  animation-duration: 0.2s;
+  animation-fill-mode: forwards;
+}
+
+.close-box {
+  animation-name: confirmBox__close;
+}
+
+@keyframes confirmBox__open {
+  from {
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+@keyframes confirmBox__close {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+}
+
+.del__confirm-box .del__msg {
+  padding: 1.7rem 6.5rem;
+}
+.del__confirm-box .del__msg p {
+  font-size: 3rem;
+  letter-spacing: 0.15rem;
+}
+
+.del__confirm-box .del__btns {
+  display: flex;
+  justify-content: space-around;
+  padding: 2rem 1rem 2.5rem 1rem;
+}
+.del__confirm-box .del__btns button {
+  all: unset;
+  border-radius: 5px;
+  font-size: 2rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.del__confirm-box .del__btns .del__confirm-btn {
+  background: var(--color-brand--1);
+  color: black;
+  padding: 0.4rem 3.2rem 0.8rem 3.2rem;
+}
+.del__confirm-box .del__btns .del__cancel-btn {
+  background: var(--color-dark--2);
+  padding: 0.4rem 2rem 0.8rem 2rem;
+}
+.del__confirm-box .del__btns .del__confirm-btn:hover,
+.del__confirm-box .del__btns .del__cancel-btn:hover {
+  filter: brightness(115%);
+}
+.del__confirm-box .del__btns .del__confirm-btn:active,
+.del__confirm-box .del__btns .del__cancel-btn:active {
+  filter: brightness(90%);
+}
+
+.overlay {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  /* background: rgba(100, 100, 100, 0.3); */
+  opacity: 0;
+  z-index: 1001;
+  backdrop-filter: blur(1.5px);
+  transition: opacity 0.2s ease;
+}
+.overlay.show {
+  opacity: 1;
 }
