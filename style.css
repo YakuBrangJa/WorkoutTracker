@@ -54,7 +54,41 @@ a:visited {
 .logo {
   height: 5.2rem;
   align-self: center;
-  margin-bottom: 4rem;
+  margin-bottom: 1.5rem;
+}
+
+.tool {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 1rem;
+  justify-content: space-between;
+}
+.filter,
+.delete__all {
+  all: unset;
+  margin: 0 6px;
+  display: flex;
+  cursor: pointer;
+}
+
+.filter:hover,
+.delete__all:hover {
+  filter: invert(0.3);
+}
+
+.filter:active,
+.delete__all:active {
+  filter: invert(0.5);
+}
+
+.filter img,
+.delete__all img {
+  width: 25px;
+  filter: invert(0.8);
+}
+
+.delete__all img {
+  filter: invert(0.7);
 }
 
 .workouts {
@@ -114,7 +148,7 @@ a:visited {
 }
 .workout__title .editor {
   display: flex;
-  transform: translate(18px, -8px);
+  transform: translate(15px, -8px);
 }
 .workout__title .editor button {
   all: unset;
@@ -132,6 +166,9 @@ a:visited {
 .workout__title .editor button span img {
   width: 20px;
   height: 20px;
+}
+.workout__title .editor .delete span img {
+  width: 17px;
 }
 
 .workout__details {

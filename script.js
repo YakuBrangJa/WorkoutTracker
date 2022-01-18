@@ -63,6 +63,8 @@ const inputDuration = document.querySelector(".form__input--duration");
 const inputCadence = document.querySelector(".form__input--cadence");
 const inputElevation = document.querySelector(".form__input--elevation");
 const formCloseBtn = document.querySelector(".form__close-btn");
+const deleteAllBtn = document.querySelector(".delete__all");
+const filterBtn = document.querySelector(".filter");
 
 class App {
   #map;
@@ -88,9 +90,9 @@ class App {
 
     formCloseBtn.addEventListener("click", this._closeForm);
 
-    // delCancel.addEventListener('click',)
+    deleteAllBtn.addEventListener("click", this._deleteAll);
   }
-
+  tus;
   _getPosition() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -255,7 +257,7 @@ class App {
         <span><img src="icons/edit1.svg"></span>
         </button>
         <button class="delete">
-        <span><img src="icons/trash1.svg"></span>
+        <span><img src="icons/delete.svg"></span>
         </button>
       </div>
       </div>
@@ -410,9 +412,16 @@ class App {
     });
   }
 
-  reset() {
+  _deleteAll() {
+    console.log(containerWorkouts.childElementCount);
+    while (containerWorkouts.childElementCount > 1) {
+      containerWorkouts.lastChild.remove();
+    }
     localStorage.removeItem("workouts");
-    location.reload();
+  }
+
+  clear() {
+    // location.reload();
   }
 
   _delete(e) {
