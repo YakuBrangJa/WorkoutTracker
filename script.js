@@ -74,7 +74,6 @@ class App {
 
   constructor() {
     this._getPosition();
-
     // fetching data from locak storage
     this._getLocalStorage();
 
@@ -90,9 +89,9 @@ class App {
 
     formCloseBtn.addEventListener("click", this._closeForm);
 
-    deleteAllBtn.addEventListener("click", this._deleteAll);
+    deleteAllBtn.addEventListener("click", this._deleteAll.bind(this));
   }
-  tus;
+
   _getPosition() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -127,13 +126,19 @@ class App {
   }
 
   _showForm(mapE) {
+    console.log(this.#marker);
+    console.log(this.#map);
     if (this.#marker != undefined) this.#map.removeLayer(this.#marker);
 
     this.#mapEvent = mapE;
     form.classList.remove("hidden");
     inputDistance.focus();
 
-    const { lat, lng } = this.#mapEvent.latlng;
+    this._showPin(this.#mapEvent);
+  }
+
+  _showPin(map) {
+    const { lat, lng } = map.latlng;
     this.#marker = L.marker([lat, lng], {
       draggable: true,
       opacity: 0.6,
@@ -238,6 +243,12 @@ class App {
       )
       .setPopupContent(`${e.type === "running" ? "🏃‍♂️" : "🚴‍♀️"} ${e.description}`)
       .openPopup();
+  }
+
+  _hideWorkoutMarker(e) {
+    this.#marker = L.marker(e.coords).removeFrom(this.#map);
+    console.log(this.#marker);
+    this.#map.removeLayer(this.#marker);
   }
 
   _renderWorkout(e) {
@@ -412,16 +423,41 @@ class App {
     });
   }
 
-  _deleteAll() {
-    console.log(containerWorkouts.childElementCount);
-    while (containerWorkouts.childElementCount > 1) {
-      containerWorkouts.lastChild.remove();
-    }
-    localStorage.removeItem("workouts");
-  }
+  _deleteAll(e) {
+    if (containerWorkouts.childElementCount === 1) return;
 
-  clear() {
-    // location.reload();
+    this._confirmPopup("Delete all activities?");
+
+    const dialogoverlay = document.querySelector(".overlay");
+    const dialogbox = document.querySelector(".del__confirm-box");
+    const delConfirm = document.querySelector(".del__confirm-btn");
+    const delCancel = document.querySelector(".del__cancel-btn");
+
+    setTimeout(() => {
+      dialogoverlay.style.opacity = "1";
+    }, 1);
+
+    function removeConfirmBox() {
+      dialogoverlay.style.opacity = "0";
+      dialogbox.classList.add("close-box");
+
+      // removing fonfirm box
+      setTimeout(() => {
+        dialogbox.parentNode.removeChild(dialogbox);
+        dialogoverlay.parentNode.removeChild(dialogoverlay);
+      }, 200);
+    }
+
+    delCancel.addEventListener("click", removeConfirmBox);
+
+    delConfirm.addEventListener("click", () => {
+      while (containerWorkouts.childElementCount > 1) {
+        containerWorkouts.lastChild.remove();
+      }
+      localStorage.removeItem("workouts");
+
+      removeConfirmBox();
+    });
   }
 
   _delete(e) {
@@ -433,12 +469,7 @@ class App {
     // removing data from LocalStorage
     const delData = this.#workouts.find((work) => work.id === delEl.dataset.id);
 
-    const sidebar = document.querySelector(".sidebar");
-    sidebar.insertAdjacentHTML(
-      "beforeend",
-      '<div class="del__confirm-box"> <div class="del__msg"><p>Delete activity?</p> </div> <div class="del__btns"> <button class="del__confirm-btn">yes</button> <button class="del__cancel-btn">cancel</button></div> </div> '
-    );
-    sidebar.insertAdjacentHTML("beforeend", '<div class="overlay"></div>');
+    this._confirmPopup("Delete activity?");
 
     const dialogoverlay = document.querySelector(".overlay");
     const dialogbox = document.querySelector(".del__confirm-box");
@@ -449,7 +480,7 @@ class App {
       dialogoverlay.style.opacity = "1";
     }, 1);
 
-    function removeConfirm() {
+    function removeConfirmBoxBox() {
       dialogoverlay.style.opacity = "0";
       dialogbox.classList.add("close-box");
 
@@ -460,10 +491,13 @@ class App {
       }, 200);
     }
 
-    delCancel.addEventListener("click", removeConfirm);
+    delCancel.addEventListener("click", removeConfirmBoxBox);
 
     delConfirm.addEventListener("click", () => {
+      removeConfirmBoxBox();
       this.#workouts.splice(this.#workouts.indexOf(delData), 1);
+      // this.#map.removeLayer(delData.coords);
+      this._hideWorkoutMarker(delData);
 
       this._setLocalStorage(this.#workouts);
 
@@ -473,8 +507,19 @@ class App {
       // removing the list from document
       setTimeout(() => delEl.parentNode.removeChild(delEl), 600);
 
-      removeConfirm();
+      // this.#workouts.forEach((work) => {
+      //   this._renderWorkoutMarker(work);
+      // });
     });
+  }
+
+  _confirmPopup(message) {
+    const sidebar = document.querySelector(".sidebar");
+    sidebar.insertAdjacentHTML(
+      "beforeend",
+      `<div class="del__confirm-box"> <div class="del__msg"><p>${message}</p> </div> <div class="del__btns"> <button class="del__confirm-btn">yes</button> <button class="del__cancel-btn">cancel</button></div> </div> `
+    );
+    sidebar.insertAdjacentHTML("beforeend", '<div class="overlay"></div>');
   }
 
   _edit(e) {
